@@ -1,5 +1,5 @@
 /**
- * Funcion para crear la DataTable
+ * Clase para crear la DataTable
  * @param {object} options - Objecto de Opciones para añadir funcionalidades.
  * @param {array} dataToRender - Array con los datos a mostrar en la Tabla.
  * @param {array} dataKeys - Array con las Clave del Objeto JSON que se mostraran en la Tabla.
@@ -168,10 +168,10 @@ export class CreateTable {
           this.#dataKeys.length
         },1fr); gap:.5rem;" ${dataAtt != "" ? dataAtt : ""}>
       `;
-        for (let i = 0; i < this.#dataKeys.length; i++) {
+        for (const key of this.#dataKeys) {
           tmp += `
           <span style="padding: 0rem 0.2rem;" ${cmsAtt != "" ? cmsAtt : ""}>${
-            ele[this.#dataKeys[i]]
+            ele[key]
           }</span>
           `;
         }
