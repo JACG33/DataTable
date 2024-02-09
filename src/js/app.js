@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", (e) => {
     .then((res) => {
       console.log(res);
       users=res.users
-      const table = new CreateTable({ idHtmlDiv: "dataTable", dataToRender:users ,dataKeys:["firstName","lastName","age","id"]});
+      const table = new CreateTable({
+        idHtmlDiv: "dataTable", dataToRender: users, dataKeys: ["firstName", "lastName", "age", "id"], theme: "dark", cellCustomAttribute:[
+        {key:"l1",value:"n1"},
+        {key:"l2",value:"n2"},
+        {key:"l3",value:"n3"},
+      ]});
     });
 });

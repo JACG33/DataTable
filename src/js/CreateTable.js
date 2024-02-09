@@ -6,7 +6,7 @@
  * @param {number[]} [limitShowData=[10, 25, 50]] - Cantidad de datos a mostrar por Pagina.
  * @param {string} idHtmlDiv - Id del Div donde se va a mostrar la Tabla
  * @param {{ prefix: string; keys: string[]; }} [renderJsonInRow={ prefix: "", keys: [] }] - Objeto con el Prefijo que tendra el data-attribute y Array con las Claves del Objeto JSON que se mostraran en el JSON del data-attribute.
- * @param {string} [cellCustomAttribute=""] - String con el valor que tendra cada celda del data-attribute.
+ * @param {{ key: string; value: string; }} [cellCustomAttribute=[{key:"",value:""}]] - String con el valor que tendra cada celda del data-attribute.
  * @param {String} theme Color del tema de la tabla
  */
 export class CreateTable {
@@ -20,7 +20,7 @@ export class CreateTable {
   #pagSiguiente = 0;
   #data = [];
   #idToBody;
-  #idToFooter = `foot${Math.ceil(Math.random()*9999)}`;
+  #idToFooter = `foot${Math.ceil(Math.random() * 9999)}`;
   #sortOrderAsc = false;
   #dataKeys = [];
   #limitShowData = [];
@@ -35,8 +35,8 @@ export class CreateTable {
     limitShowData = [10, 25, 50],
     idHtmlDiv = "",
     renderJsonInRow = { prefix: "", keys: [] },
-    cellCustomAttribute = "",
-    theme=""
+    cellCustomAttribute = [{ key: "", value: "" }],
+    theme = ""
   }) {
     this.#data = dataToRender;
     this.#dataKeys = dataKeys;
@@ -45,7 +45,7 @@ export class CreateTable {
     this.#cellCustomAttribute = cellCustomAttribute;
     this.#dataCount = limitShowData[0];
     this.#renderJsonInRow = renderJsonInRow;
-    this.#theme=theme
+    this.#theme = theme
     this.#initTable();
   }
 
@@ -97,13 +97,13 @@ export class CreateTable {
 
   /**
    * Funcion para dividir el Array de datos en diferentes Arrays de acuerdo a la cantidad de datos a Mostrar en la Tabla
-   * @param {Object[]} users Array de datos
+   * @param {Object[]} dataToSplit Array de datos
    */
-  #splitUsersToPaginate = (users = []) => {
+  #splitDataToPaginate = (dataToSplit = []) => {
     let postionPaginateArray = 0;
     let count = 0;
     this.#tmpDataPaginate = [];
-    users.forEach((user) => {
+    dataToSplit.forEach((user) => {
       count++;
       if (count <= this.#dataCount) {
         this.#tmpDataPaginate[postionPaginateArray]?.length
@@ -140,20 +140,21 @@ export class CreateTable {
         <button type="button" data-index="${this.#pagSiguiente}">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
         </button>
-        <button type="button" data-index="${
-          this.#tmpDataPaginate.length - 1
-        }">
+        <button type="button" data-index="${this.#tmpDataPaginate.length - 1}">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7l5 5l-5 5" /><path d="M13 7l5 5l-5 5" /></svg>
         </button>
       `;
   };
 
-  #renderTableBody = ({ data = [] }) => {
+  #refreshTableBody = ({ data = [] }) => {
     let tmp = ``;
     let cmsAtt = "";
-    if (this.#cellCustomAttribute !== "")
-      cmsAtt += `data-attcell='${this.#cellCustomAttribute}'`;
-
+    if (this.#cellCustomAttribute !== "") {
+      console.log(this.#cellCustomAttribute);
+      this.#cellCustomAttribute.forEach(attribute => {
+        cmsAtt += `data-${attribute.key}='${attribute.value}'`;
+      })
+    }
     if (data.length === 0)
       tmp = `
       <tr style="padding: .2rem 0rem; display: grid;  gap:.5rem; text-align:center;">
@@ -176,19 +177,18 @@ export class CreateTable {
         }
         tmp += `
         <tr style="padding: .2rem 0rem; display: grid;
-        grid-template-columns: repeat(${
-          this.#dataKeys.length
-        },1fr); gap:.5rem;" ${dataAtt != "" ? dataAtt : ""}>
+        grid-template-columns: repeat(${this.#dataKeys.length},1fr); gap:.5rem;" ${dataAtt != "" ? dataAtt : ""} ${cmsAtt != "" ? cmsAtt : ""}>
       `;
         for (const key of this.#dataKeys) {
-          tmp += `
-          <td style="padding: 0rem 0.2rem;" ${cmsAtt != "" ? cmsAtt : ""}>${
-            ele[key]
-          }</td>
-          `;
+          tmp += `<td style="padding: 0rem 0.2rem;">${ele[key]}</td>`;
         }
         tmp += `</tr>`;
       });
+    return tmp
+  }
+
+  #renderTableBody = ({ data = [] }) => {
+    let tmp = this.#refreshTableBody({ data })
     if (document.getElementById(this.#idToFooter))
       document.getElementById(this.#idToFooter).innerHTML =
         this.#renderTablePagination();
@@ -200,18 +200,16 @@ export class CreateTable {
    */
   #renderTable = () => {
     const $htmlDiv = document.getElementById(`${this.#idHtmlDiv}`);
-    $htmlDiv.className =`datatable__wrapper ${this.#theme}`;
+    $htmlDiv.className = `datatable__wrapper ${this.#theme}`;
 
     const $buttonsArea = $htmlDiv.querySelector("[data-id=buttonsarea]");
     $buttonsArea.style = `grid-area: btnsarea;
     display: grid;
-    grid-template-columns: repeat(${
-      $buttonsArea.querySelectorAll("button").length
-    },1fr); gap: .5rem;`;
+    grid-template-columns: repeat(${$buttonsArea.querySelectorAll("button").length},1fr); gap: .5rem;`;
 
     $buttonsArea.querySelectorAll("button").forEach((ele, index) => {
       ele.setAttribute("data-sortby", this.#dataKeys[index]);
-      ele.innerHTML+=' <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrows-move-vertical" width="24" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 18l3 3l3 -3" /><path d="M12 15v6" /><path d="M15 6l-3 -3l-3 3" /><path d="M12 3v6" /></svg>';
+      ele.innerHTML += ' <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrows-move-vertical" width="24" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 18l3 3l3 -3" /><path d="M12 15v6" /><path d="M15 6l-3 -3l-3 3" /><path d="M12 3v6" /></svg>';
     });
 
     /**
@@ -234,9 +232,7 @@ export class CreateTable {
 
     $headerTable.insertAdjacentHTML(
       "beforeend",
-      `
-      <input class="datatable__input__search" type="text" id="findItem">
-      `
+      `<input class="datatable__input__search" type="text" id="findItem">`
     );
 
     /**
@@ -274,14 +270,13 @@ export class CreateTable {
       const { target } = e;
 
       if (target.closest("[data-sortby]")) {
-        this.#idToBody.innerHTML = this.#renderTableBody({
+        this.#idToBody.innerHTML = this.#refreshTableBody({
           data: this.#sortBy(target.closest("[data-sortby]").dataset.sortby),
         });
         this.#sortOrderAsc = !this.#sortOrderAsc;
       }
 
       if (target.closest("[data-index]")) {
-        console.log(45);
         this.#actualPosition = Number(target.closest("[data-index]").dataset.index);
         if (this.#actualPosition > this.#tmpDataPaginate.length - 1)
           this.#actualPosition = this.#tmpDataPaginate.length - 1;
@@ -296,7 +291,7 @@ export class CreateTable {
 
       if (target.matches("#usercount")) {
         this.#dataCount = target.value;
-        this.#splitUsersToPaginate(this.#data);
+        this.#splitDataToPaginate(this.#data);
         if (this.#actualPosition > this.#tmpDataPaginate.length - 1)
           this.#actualPosition = this.#tmpDataPaginate.length - 1;
         this.#idToBody.innerHTML = this.#renderTableBody({
@@ -320,9 +315,9 @@ export class CreateTable {
    * Quitar Listeners al DOM
    */
   #removeListeners = () => {
-    document.removeEventListener("input", (e) => {});
-    document.removeEventListener("change", (e) => {});
-    document.removeEventListener("click", (e) => {});
+    document.removeEventListener("input", (e) => { });
+    document.removeEventListener("change", (e) => { });
+    document.removeEventListener("click", (e) => { });
   };
   /**
    * Inicio de Funciones Principales
@@ -330,7 +325,7 @@ export class CreateTable {
   #initTable = () => {
     this.#addListeners();
     this.#removeListeners();
-    this.#splitUsersToPaginate(this.#data);
+    this.#splitDataToPaginate(this.#data);
     this.#renderTable();
   };
 
@@ -341,7 +336,7 @@ export class CreateTable {
    */
   reloadTable = ({ data = [] }) => {
     this.#data = data;
-    this.#splitUsersToPaginate(this.#data);
+    this.#splitDataToPaginate(this.#data);
     this.#idToBody.innerHTML = null;
     this.#idToBody.insertAdjacentHTML(
       "afterbegin",
