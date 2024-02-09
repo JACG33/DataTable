@@ -1,8 +1,24 @@
+:root{
+  --odd:rgba(195, 207, 212, 0.2);
+  --even:rgba(129, 139, 143, 0.2);
+  --color:#383838;
+  --border-color:#383838;
+}
+
+.datatable__wrapper:is(.dark){
+  color-scheme: dark light;
+  --odd:rgba(155, 195, 211, 0.2);
+  --even:rgb(104 130 141 / 20%);
+  --color:#fff;
+  --border-color:#fff;
+}
+
 .datatable__wrapper {
   display: grid;
   grid-template-areas: 'head' 'btnsarea' 'bod' 'pag';
   gap: .5rem;
-  color-scheme: dark light;
+  width: 100%;
+  color: var(--color);
 }
 
 .datatable__header {
@@ -14,15 +30,33 @@
   grid-area: head;
 }
 
+.select__usercount,
+.datatable__input__search {
+  padding: 5px;
+  border-radius: 8px;
+  border: var(--border-color) 1px solid;
+}
+
 .datatable__input__search {
   width: 100%;
   min-width: 30px;
+  outline: none;
+}
+
+thead button {
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+  border: var(--border-color) 1px solid;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .datatable__body {
   height: 260px;
   overflow-y: auto;
-  color: #fff;
   grid-area: bod;
 }
 
@@ -30,29 +64,40 @@
   grid-area: pag;
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  .datatable__body div:nth-child(odd) {
-    background-color: rgba(155, 195, 211, 0.2);
-  }
+.datatable__footer button{
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  border: var(--border-color) 1px solid;
+}
 
-  .datatable__body div:nth-child(even) {
-    background-color: rgb(104 130 141 / 20%);
-  }
+.datatable__body tr:nth-child(odd) {
+  background-color: var(--odd);
+}
+
+.datatable__body tr:nth-child(even) {
+  background-color: var(--even);
+}
+/* @media (prefers-color-scheme: dark) {
 }
 
 @media (prefers-color-scheme: light) {
-  .datatable__body div:nth-child(odd) {
-    background-color: rgba(195, 207, 212, 0.2);
+  .datatable__body tr:nth-child(odd) {
+    background-color: var(--odd);
   }
 
-  .datatable__body div:nth-child(even) {
-    background-color: rgba(129, 139, 143, 0.2);
+  .datatable__body tr:nth-child(even) {
+    background-color: var(--even);
   }
 
   .datatable__body {
     color: #000000;
   }
-}
+} */

@@ -7,6 +7,7 @@
  * @param {string} idHtmlDiv - Id del Div donde se va a mostrar la Tabla
  * @param {{ prefix: string; keys: string[]; }} [renderJsonInRow={ prefix: "", keys: [] }] - Objeto con el Prefijo que tendra el data-attribute y Array con las Claves del Objeto JSON que se mostraran en el JSON del data-attribute.
  * @param {string} [cellCustomAttribute=""] - String con el valor que tendra cada celda del data-attribute.
+ * @param {String} theme Color del tema de la tabla
  */
 export class CreateTable {
   /**
@@ -19,13 +20,14 @@ export class CreateTable {
   #pagSiguiente = 0;
   #data = [];
   #idToBody;
-  #idToFooter = crypto.randomUUID();
+  #idToFooter = `foot${Math.ceil(Math.random()*9999)}`;
   #sortOrderAsc = false;
   #dataKeys = [];
   #limitShowData = [];
   #idHtmlDiv = "";
   #renderJsonInRow;
   #cellCustomAttribute;
+  #theme;
 
   constructor({
     dataToRender = [],
@@ -34,6 +36,7 @@ export class CreateTable {
     idHtmlDiv = "",
     renderJsonInRow = { prefix: "", keys: [] },
     cellCustomAttribute = "",
+    theme=""
   }) {
     this.#data = dataToRender;
     this.#dataKeys = dataKeys;
@@ -42,6 +45,7 @@ export class CreateTable {
     this.#cellCustomAttribute = cellCustomAttribute;
     this.#dataCount = limitShowData[0];
     this.#renderJsonInRow = renderJsonInRow;
+    this.#theme=theme
     this.#initTable();
   }
 
@@ -126,13 +130,21 @@ export class CreateTable {
       : "";
 
     return `
-        <button type="button" data-index="${0}">⏮</button>
-        <button type="button" data-index="${this.#pagAnterior}">◀</button>
+        <button type="button" data-index="${0}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11 7l-5 5l5 5" /><path d="M17 7l-5 5l5 5" /></svg>
+        </button>
+        <button type="button" data-index="${this.#pagAnterior}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6" /></svg>
+        </button>
         <span>Pagina ${pagActual} de ${this.#tmpDataPaginate.length}</span>
-        <button type="button" data-index="${this.#pagSiguiente}">▶</button>
+        <button type="button" data-index="${this.#pagSiguiente}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+        </button>
         <button type="button" data-index="${
           this.#tmpDataPaginate.length - 1
-        }">⏭</button>
+        }">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7l5 5l-5 5" /><path d="M13 7l5 5l-5 5" /></svg>
+        </button>
       `;
   };
 
@@ -144,9 +156,9 @@ export class CreateTable {
 
     if (data.length === 0)
       tmp = `
-      <div style="padding: .2rem 0rem; display: grid;  gap:.5rem; text-align:center;">
-        <span style="padding: 0rem 0.2rem;">Sin registros</span>
-      </div>
+      <tr style="padding: .2rem 0rem; display: grid;  gap:.5rem; text-align:center;">
+        <td style="padding: 0rem 0.2rem;">Sin registros</td>
+      </tr>
       `;
     else
       data.forEach((ele, index) => {
@@ -163,19 +175,19 @@ export class CreateTable {
           )}'`;
         }
         tmp += `
-        <div style="padding: .2rem 0rem; display: grid;
+        <tr style="padding: .2rem 0rem; display: grid;
         grid-template-columns: repeat(${
           this.#dataKeys.length
         },1fr); gap:.5rem;" ${dataAtt != "" ? dataAtt : ""}>
       `;
         for (const key of this.#dataKeys) {
           tmp += `
-          <span style="padding: 0rem 0.2rem;" ${cmsAtt != "" ? cmsAtt : ""}>${
+          <td style="padding: 0rem 0.2rem;" ${cmsAtt != "" ? cmsAtt : ""}>${
             ele[key]
-          }</span>
+          }</td>
           `;
         }
-        tmp += `</div>`;
+        tmp += `</tr>`;
       });
     if (document.getElementById(this.#idToFooter))
       document.getElementById(this.#idToFooter).innerHTML =
@@ -188,7 +200,7 @@ export class CreateTable {
    */
   #renderTable = () => {
     const $htmlDiv = document.getElementById(`${this.#idHtmlDiv}`);
-    $htmlDiv.className = "datatable__wrapper";
+    $htmlDiv.className =`datatable__wrapper ${this.#theme}`;
 
     const $buttonsArea = $htmlDiv.querySelector("[data-id=buttonsarea]");
     $buttonsArea.style = `grid-area: btnsarea;
@@ -199,6 +211,7 @@ export class CreateTable {
 
     $buttonsArea.querySelectorAll("button").forEach((ele, index) => {
       ele.setAttribute("data-sortby", this.#dataKeys[index]);
+      ele.innerHTML+=' <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrows-move-vertical" width="24" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 18l3 3l3 -3" /><path d="M12 15v6" /><path d="M15 6l-3 -3l-3 3" /><path d="M12 3v6" /></svg>';
     });
 
     /**
@@ -207,6 +220,7 @@ export class CreateTable {
     const $headerTable = document.createElement("div");
     $headerTable.className = "datatable__header";
     const $select = document.createElement("select");
+    $select.className = "select__usercount";
     $select.id = "usercount";
 
     this.#limitShowData.forEach((ele) => {
@@ -228,7 +242,7 @@ export class CreateTable {
     /**
      * Creacion del Footer de la tabla.
      */
-    const $footerTable = document.createElement("div");
+    const $footerTable = document.createElement("tfoot");
     $footerTable.id = this.#idToFooter;
     $footerTable.className = "datatable__footer";
     $footerTable.innerHTML = this.#renderTablePagination();
@@ -259,19 +273,20 @@ export class CreateTable {
     document.addEventListener("click", (e) => {
       const { target } = e;
 
-      if (target.dataset.sortby) {
+      if (target.closest("[data-sortby]")) {
         this.#idToBody.innerHTML = this.#renderTableBody({
-          data: this.#sortBy(target.dataset.sortby),
+          data: this.#sortBy(target.closest("[data-sortby]").dataset.sortby),
         });
         this.#sortOrderAsc = !this.#sortOrderAsc;
       }
 
-      if (target.dataset.index) {
-        this.#actualPosition = Number(target.dataset.index);
+      if (target.closest("[data-index]")) {
+        console.log(45);
+        this.#actualPosition = Number(target.closest("[data-index]").dataset.index);
         if (this.#actualPosition > this.#tmpDataPaginate.length - 1)
           this.#actualPosition = this.#tmpDataPaginate.length - 1;
         this.#idToBody.innerHTML = this.#renderTableBody({
-          data: this.#tmpDataPaginate[Number(target.dataset.index)],
+          data: this.#tmpDataPaginate[Number(target.closest("[data-index]").dataset.index)],
         });
       }
     });

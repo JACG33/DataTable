@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./src/css/dataTable.css">
   <title>Document</title>
   <style>
-    @media (prefers-color-scheme: dark) {
+    /* @media (prefers-color-scheme: dark) {
       body {
         background-color: #333;
       }
@@ -17,7 +17,7 @@
       body {
         background-color: #e8e8e8;
       }
-    }
+    } */
   </style>
 </head>
 
@@ -25,16 +25,18 @@
 
   <h1>DataTable Demo</h1>
 
-  <div id="dataTable" class="datatable__wrapper">
-    <div data-id="buttonsarea">
-      <button type="button">Nombre ↕</button>
-      <button type="button">Apellido ↕</button>
-      <button type="button">Cedula ↕</button>
-      <button type="button">Id ↕</button>
-    </div>
-    <div id="data" class="datatable__body">
-
-    </div>
+  <div >
+    <table id="dataTable" class="datatable__wrapper">
+      <thead>
+        <tr data-id="buttonsarea">
+          <th><button type="button">Nombre</button></th>
+          <th><button type="button">Apellido</button></th>
+          <th><button type="button">Cedula</button></th>
+          <th><button type="button">Id</button></th>
+        </tr>
+      </thead>
+      <tbody id="data" class="datatable__body"></tbody>
+    </table>
   </div>
 
   <script type="module" src="./src/js/app.js"></script>
