@@ -1,5 +1,10 @@
 # DataTable
 
+## Version 0.0.21
++ Cambios menores en los __estilos/CSS__.
++ Cambios menores en los __scripts/JS__.
++ Se Modifico el __README__.
+
 ## Version 0.0.2
 + Se añadio la dependencia de desarrollo __vite__.
 + Se Modifico el parametro cellCustomAttribute para añadir atributos personalizados a cada fila __ejemplo data-key=value__.

@@ -150,7 +150,6 @@ export class CreateTable {
     let tmp = ``;
     let cmsAtt = "";
     if (this.#cellCustomAttribute !== "") {
-      console.log(this.#cellCustomAttribute);
       this.#cellCustomAttribute.forEach(attribute => {
         cmsAtt += `data-${attribute.key}='${attribute.value}'`;
       })
