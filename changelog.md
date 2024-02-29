@@ -1,5 +1,9 @@
 # DataTable
 
+## Version 0.0.25
++ Cambios menores en los __estilos/CSS__.
++ Se añadio la funcionalidad de representar los numero de las paginas en el footer de la tabla, asi como la posibilidad de "navegar" por la diferentes paginas disponibles.
+
 ## Version 0.0.21
 + Cambios menores en los __estilos/CSS__.
 + Cambios menores en los __scripts/JS__.

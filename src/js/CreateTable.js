@@ -8,25 +8,73 @@
  * @param {{ prefix: string; keys: string[]; }} [renderJsonInRow={ prefix: "", keys: [] }] - Objeto con el Prefijo que tendra el data-attribute y Array con las Claves del Objeto JSON que se mostraran en el JSON del data-attribute.
  * @param {{ key: string; value: string; }} [cellCustomAttribute=[{key:"",value:""}]] - String con el valor que tendra cada celda del data-attribute.
  * @param {String} theme Color del tema de la tabla
+ * @param {Boolean} serverside True o False para cargar data de forma diferida.
+ * @param {{url:String,method:String,aditionalData:[{key:String,value:String}]}} [fetch={url:"",method:"",aditionalData:[{key:"",value:""}]}] True o False para cargar data de forma diferida.
  */
 export class CreateTable {
   /**
-   * Variables autilizar en toda la Funcion.
+   * @type {Number} Variable que una referencia de cuantos datos mostrar por pagina. 
    */
-  #dataCount = [0];
+  #dataCount = 0;
+  /**
+   * @type {Array} Variable multidimencional para seccionar los datos de acuerdo al valor que tenga #dataCount.
+   */
   #tmpDataPaginate = [];
+  /**
+   * @type {Number} Variale que identifica el numero de la pagina en la que nos encontramos.
+   */
   #actualPosition = 0;
+  /**
+   * @type {Number} Variable que identifica el numero de la position anterior de la pagina.
+   */
+  #prevPosition = 0;
+  /**
+   * @type {Number} Variale que identifica el numero de la pagina anterior.
+   */
   #pagAnterior = 0;
+  /**
+   * @type {Number} Variale que identifica el numero de la pagina siguiente.
+   */
   #pagSiguiente = 0;
+  /**
+   * @type {Array} Variable para los tados a renderizar.
+   */
   #data = [];
+  /**
+   * @type {HTMLElement} Variable para almacenar el cuerpo de la tabla donde se renderizan los datos.
+   */
   #idToBody;
+  /**
+   * @type {String} Variable para identificar el footer de la tabla.
+   */
   #idToFooter = `foot${Math.ceil(Math.random() * 9999)}`;
+  /**
+   * @type {Boolean} Varible para identificar la forma en que se ordenan los datos.
+   */
   #sortOrderAsc = false;
+  /**
+   * @type {Array} Variable para almecenar la llaves que se deben renderizar en la tabla.
+   */
   #dataKeys = [];
+  /**
+   * @type {Array} Variable para identificar cuantos datos se deben mostrar.
+   */
   #limitShowData = [];
+  /**
+   * @type {String} Variable para el id del div donde se encuentra la tabla
+   */
   #idHtmlDiv = "";
+  /**
+   * @type {Object} Variable para identificar propiedades.
+   */
   #renderJsonInRow;
+  /**
+   * @type {Array} Variable de JSON de atributos personalizados.
+   */
   #cellCustomAttribute;
+  /**
+   * @type {String} Variable del tema de la tabla.
+   */
   #theme;
 
   constructor({
@@ -36,7 +84,9 @@ export class CreateTable {
     idHtmlDiv = "",
     renderJsonInRow = { prefix: "", keys: [] },
     cellCustomAttribute = [{ key: "", value: "" }],
-    theme = ""
+    theme = "",
+    serverside = false,
+    fetch = { url: "", method: "", aditionalData: [{ key: "", value: "" }] }
   }) {
     this.#data = dataToRender;
     this.#dataKeys = dataKeys;
@@ -117,7 +167,8 @@ export class CreateTable {
     });
   };
 
-  #renderTablePagination = () => {
+
+  #renderTablePagination = (newposition = null) => {
     this.#pagAnterior = this.#actualPosition;
     this.#pagSiguiente = this.#actualPosition;
     this.#pagAnterior <= 0 ? (this.#pagAnterior = 0) : this.#pagAnterior--;
@@ -129,20 +180,59 @@ export class CreateTable {
       ? (pagActual = Number(this.#actualPosition) + 1)
       : "";
 
+    let tmp = ``
+
+    const prevBnts = (position) => {
+      let btn = []
+      let count = position
+      if (position <= this.#tmpDataPaginate.length - 1)
+        for (let i = 0; i < 3; i++) {
+          count--
+          if (count > 0) {
+            btn.push(`<button class="datatable__footer__btn datatable__footer__btn--number ${count == this.#actualPosition ? "datatable__footer__btn--active" : ""}" type="button" data-index="${count}">${count + 1}</button>`)
+          }
+        }
+      return btn.length > 0 ? btn.reverse().join("") : ""
+    }
+    const nexBnts = (position) => {
+      let tmp = ``
+      let count = position
+      if (position >= 0)
+        for (let i = 0; i < 3; i++) {
+          if (count == 0)
+            count++
+          if (count > 0 && count < this.#tmpDataPaginate.length - 1) {
+            tmp += `<button class="datatable__footer__btn datatable__footer__btn--number ${count == this.#actualPosition ? "datatable__footer__btn--active" : ""}" type="button" data-index="${count}">${count + 1}</button>`
+          }
+          count++
+        }
+      return tmp
+    }
+
+    tmp += prevBnts(this.#actualPosition)
+    tmp += nexBnts(this.#actualPosition)
+
+
     return `
-        <button type="button" data-index="${0}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11 7l-5 5l5 5" /><path d="M17 7l-5 5l5 5" /></svg>
-        </button>
-        <button type="button" data-index="${this.#pagAnterior}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6" /></svg>
-        </button>
         <span>Pagina ${pagActual} de ${this.#tmpDataPaginate.length}</span>
-        <button type="button" data-index="${this.#pagSiguiente}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
-        </button>
-        <button type="button" data-index="${this.#tmpDataPaginate.length - 1}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7l5 5l-5 5" /><path d="M13 7l5 5l-5 5" /></svg>
-        </button>
+        <div class="datatable__footer__btns">
+          <button class="datatable__footer__btn" type="button" data-index="${0}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M11 7l-5 5l5 5" /><path d="M17 7l-5 5l5 5" /></svg>
+          </button>
+          <button class="datatable__footer__btn" type="button" data-index="${this.#pagAnterior}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l-6 6l6 6" /></svg>
+          </button>
+          <button class="datatable__footer__btn datatable__footer__btn--number ${this.#actualPosition == 0 ? "datatable__footer__btn--active" : ""}" type="button" data-index="0">1</button>
+          ${tmp}
+          <button class="datatable__footer__btn datatable__footer__btn--number ${this.#actualPosition == this.#tmpDataPaginate.length - 1 ? "datatable__footer__btn--active" : ""}" type="button" data-index="${this.#tmpDataPaginate.length - 1}">${this.#tmpDataPaginate.length}</button>
+          <button class="datatable__footer__btn" type="button" data-index="${this.#pagSiguiente}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+          </button>
+          <button class="datatable__footer__btn " type="button" data-index="${this.#tmpDataPaginate.length - 1}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevrons-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7l5 5l-5 5" /><path d="M13 7l5 5l-5 5" /></svg>
+          </button>
+        </div>
+        <span>Resultados 100</span>
       `;
   };
 
@@ -186,11 +276,11 @@ export class CreateTable {
     return tmp
   }
 
-  #renderTableBody = ({ data = [] }) => {
+  #renderTableBody = ({ data = [], newposition = null }) => {
     let tmp = this.#refreshTableBody({ data })
     if (document.getElementById(this.#idToFooter))
       document.getElementById(this.#idToFooter).innerHTML =
-        this.#renderTablePagination();
+        this.#renderTablePagination(newposition);
     return tmp;
   };
 
@@ -276,11 +366,12 @@ export class CreateTable {
       }
 
       if (target.closest("[data-index]")) {
+        this.#prevPosition = this.#actualPosition
         this.#actualPosition = Number(target.closest("[data-index]").dataset.index);
         if (this.#actualPosition > this.#tmpDataPaginate.length - 1)
           this.#actualPosition = this.#tmpDataPaginate.length - 1;
         this.#idToBody.innerHTML = this.#renderTableBody({
-          data: this.#tmpDataPaginate[Number(target.closest("[data-index]").dataset.index)],
+          data: this.#tmpDataPaginate[Number(target.closest("[data-index]").dataset.index)], newposition: Number(target.closest("[data-index]").dataset.index)
         });
       }
     });

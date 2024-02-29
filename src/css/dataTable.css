@@ -1,8 +1,8 @@
 .datatable__wrapper {
-  --odd:rgba(195, 207, 212, 0.2);
-  --even:rgba(129, 139, 143, 0.2);
-  --color:#383838;
-  --border-color:#383838;
+  --odd: rgba(195, 207, 212, 0.2);
+  --even: rgba(129, 139, 143, 0.2);
+  --color: #383838;
+  --border-color: #383838;
   display: grid;
   grid-template-areas: 'head' 'btnsarea' 'bod' 'pag';
   gap: .5rem;
@@ -12,12 +12,12 @@
   color-scheme: light dark;
 }
 
-.datatable__wrapper:is(.dark){
+.datatable__wrapper:is(.dark) {
   color-scheme: dark light;
-  --odd:rgba(155, 195, 211, 0.2);
-  --even:rgb(104 130 141 / 20%);
-  --color:#fff;
-  --border-color:#fff;
+  --odd: rgba(155, 195, 211, 0.2);
+  --even: rgb(104 130 141 / 20%);
+  --color: #fff;
+  --border-color: #fff;
 }
 
 .datatable__header {
@@ -63,12 +63,18 @@ thead button {
 .datatable__footer {
   grid-area: pag;
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: center;
   gap: 0.5rem;
 }
 
-.datatable__footer button{
+.datatable__footer__btns {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.datatable__footer__btn {
   padding: 0px;
   display: flex;
   justify-content: center;
@@ -76,6 +82,13 @@ thead button {
   cursor: pointer;
   border-radius: 8px;
   border: var(--border-color) 1px solid;
+}
+.datatable__footer__btn--number {
+  padding: 4px 8px;
+}
+.datatable__footer__btn--active {
+  background-color: var(--border-color);
+  color: blue;
 }
 
 .datatable__body tr:nth-child(odd) {
